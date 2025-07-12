@@ -1,64 +1,50 @@
-# Server-Client-Application
+# Server-Client Application
 
-**Harea Teodor-Adrian**
-**323CA**
-**Tema 2**
-*Aplicatie client-server TCP si UDP pentru gestionarea mesajelor*
+**Author:** Harea Teodor-Adrian  
+**Class:** 323CA
 
-In cadrul acestei teme, am implementat 2 entitati si anume _clientul_ si _serverul_.
-Codul este scris in limbajul C, si se pot remarca 2 fisiere specifice fiecarei entitati:
+---
 
-->client.c
-->server.c
+## Overview
 
-Clientul si serverul functioneaza independent si comunica prin intermediul socketilor.
-Se utilizeaza biblioteca de socketi si se realizeaza multiplexare I/O. Atat clientul,
-cat si serverul, se bazeaza pe un while in care se realizeaza multiplexarea
-descriptorilor pentru socketi si pentru datele primite de la tastatura. Se adauga
-socketii in poll si la fiecare rulare a while-ului se verifica daca s-a primit
-printr-un socket ceva.
+This project implements two independent entities, a client and a server, written in C, communicating via TCP and UDP sockets. The application uses I/O multiplexing with `poll` to handle simultaneous input from both sockets and the keyboard.
 
-Mesajele sunt procesate cu ajutorul urmatoarelor structuri:
+---
 
-->my_protocol: aceasta structura faciliteaza transmiterea de informatii de catre client
-spre server. Prin intermediul acesteia se realizeaza apelul de subscribe/unsubscribe
-si trimiterea id-ului subscriberului nou conectat. Campul _type_ este cel care ii
-spune serverului despre ce caz din cele 3 este vorba. In _topic_ se incadreaza id-ul
-sau topicul la care se face subscribe/unsubscribe.
+## Files
 
-->udp_message: in aceasta structura se incadreaza mesajele primite de la clientii
-udp de catre server. Conform enuntului, campurile sunt cele prestabilite: topic,
-type si content.
+- **client.c**  
+  Implements the client-side functionality.
 
-->send_tcp_information: cu ajutorul acestei structuri serverul transmite mesajele
-primite de la clientii udp catre clientii tcp. Aceasta este o structura ce contine
-campurile din *udp_message*, dar are si campuri pentru ip-ul si port-ul clientului
-udp care a transmis mesajul, pentru a transmite si aceste informatii clientului TCP,
-pentru afisare.
+- **server.c**  
+  Implements the server-side functionality.
 
-->client: structura este folosita in cadrul serverului. Aceasta retine informatiile
-despre clientii care se conecteaza la server(id-ul, socket-ul prin care comunica,
-ip-ul, port-ul, daca este conectat sau nu, topicurile la care este abonat, numarul
-acestora si numarul maxim alocat pentru topicuri)
+---
 
-Atat pentru structurile de clienti cat si pentru topicuri, se aloca initial un numar
-mic de octeti, iar atunci cand este nevoie, se mareste spatiul alocat
-pentru a face loc altor entitati. Prin acest procedeu, nu se limiteaza numarul spaiului
-alocat.
+## Key Structures
 
-Mesajele afisate sunt numai cele cerute in enunt. In cazul unei erori, se apeleaza
-perror.
+- **my_protocol**  
+  Facilitates communication from client to server, enabling subscribe/unsubscribe operations and transmitting subscriber IDs. The `type` field indicates the operation type, and `topic` holds the relevant topic or subscriber ID.
 
-Sunt tratate cazurile de eroare, sunt verificate valorile intoarse de apelurile de
-sistem si se gestioneaza cazurile in care lucrurile nu merg bine.
+- **udp_message**  
+  Represents messages received by the server from UDP clients, containing predefined fields: topic, type, and content.
 
-In cazul in care input-ul primit este invalid, programul stie acest lucru si nu se
-ajunge in stari nedefinite sau la comportament impredictibil.
+- **send_tcp_information**  
+  Used by the server to forward UDP client messages to TCP clients. Extends `udp_message` by including the UDP client's IP and port for display purposes.
 
-De asemenea, este dezactivat algoritmul lui Nagle, asa cum este cerut in enunt.
+- **client**  
+  Used on the server side to store client information such as ID, socket descriptor, IP, port, connection status, subscribed topics, and topic counts. Initial allocations for clients and topics are small but dynamically expanded as needed.
 
-In cazul in care serverul se inchide, clientii primesc un mesaj cu len egal cu 0 si
-se elibereaza restursele, urmand ca clientul sa se inchida.
+---
 
-Pentru trimiterea si primirea mesajelor, se realizeaza conversiile intre host si network
-order.
+## Features
+
+- I/O multiplexing with `poll` to manage socket and keyboard input concurrently.  
+- Dynamic allocation and resizing of client and topic lists to avoid fixed limits.  
+- Proper error handling with checks on system call returns and use of `perror` on failure.  
+- Detection and handling of invalid inputs to prevent undefined or unpredictable behavior.  
+- Disabling Nagle’s algorithm as required.  
+- Graceful server shutdown notification to clients, freeing resources properly.  
+- Network-to-host and host-to-network byte order conversions for message transmission.
+
+---
